@@ -28,21 +28,18 @@ GT ID: 903862828
 		  	   		  		 		  		  		    	 		 		   		 		  
 """  		  	   		  		 		  		  		    	 		 		   		 		  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
-import datetime as dt  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-import numpy as np  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
+import datetime as dt  		  	   		  		 		  		  		    	 		 		   		 		    	   		  		 		  		  		    	 		 		   		 		  
+import numpy as np  		  	   		  		 		  		  		    	 		 		   		 		    	   		  		 		  		  		    	 		 		   		 		  
 import matplotlib.pyplot as plt  		  	   		  		 		  		  		    	 		 		   		 		  
 import pandas as pd  		  	   		  		 		  		  		    	 		 		   		 		  
 from util import get_data, plot_data 
-import scipy.optimize as spo
-  		  	   		  		 		  		  		    	 		 		   		 		  
+import scipy.optimize as spo	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
 # This is the function that will be tested by the autograder  		  	   		  		 		  		  		    	 		 		   		 		  
 # The student must update this code to properly implement the functionality  		  	   		  		 		  		  		    	 		 		   		 		  
 def optimize_portfolio(  		  	   		  		 		  		  		    	 		 		   		 		  
-    sd=dt.datetime(2008, 1, 1),  		  	   		  		 		  		  		    	 		 		   		 		  
-    ed=dt.datetime(2008, 1, 2),  		  	   		  		 		  		  		    	 		 		   		 		  
+    sd=dt.datetime(2009, 1, 1),  		  	   		  		 		  		  		    	 		 		   		 		  
+    ed=dt.datetime(2010, 1, 1),  		  	   		  		 		  		  		    	 		 		   		 		  
     syms=["GOOG", "AAPL", "GLD", "XOM"],  		  	   		  		 		  		  		    	 		 		   		 		  
     gen_plot=False,  		  	   		  		 		  		  		    	 		 		   		 		  
 ):  		  	   		  		 		  		  		    	 		 		   		 		  
@@ -76,39 +73,45 @@ def optimize_portfolio(
     allocs = np.asarray(1/len(syms) * np.ones(len(syms)))   
     		  	   		  		 		  		  		    	 		 		   		 		  
     # Computing Stats
+    # Daily return for each stock
     def compute_daily_stock_returns(prices):
         daily_returns = prices.copy()
-        # compute daily returns for row 1 onwards        
         daily_returns[1:] = (prices[1:] / prices[:-1].values) - 1
         daily_returns.iloc[0, :] = 0 #Set daily returns for row 0 to 0
         return daily_returns
     
+    # Daily porfolio return
     def compute_daily_portfolio_return(prices, allocs):
         daily_portfolio_value = calculate_daily_portfolio_value(prices, allocs)
         daily_portfolio_returns = (daily_portfolio_value/daily_portfolio_value.shift(1)) - 1
         daily_portfolio_returns = daily_portfolio_returns.iloc[1:]
         return daily_portfolio_returns
-        
+    # Average Daily Portfolio Return
     def calculate_average_daily_portfolio_return(prices, allocs):
         daily_returns = compute_daily_portfolio_return(prices, allocs)    
         return daily_returns.mean()
     
+    # Standard Deviation of daily portfolio return
     def calculate_standard_deviation_of_daily_portfolio_return(prices, allocs):
-        daily_returns = compute_daily_portfolio_return(prices, allocs)
-        return daily_returns.std()
+        daily_portfolio_returns = compute_daily_portfolio_return(prices, allocs)
+        return daily_portfolio_returns.std()
     
+    # Sharpe ratio
     def calculate_sharpe_ratio(prices, allocs):
         return calculate_average_daily_portfolio_return(prices, allocs) / calculate_standard_deviation_of_daily_portfolio_return(prices, allocs)    
 
+    # Total daily porfolio value
     def calculate_daily_portfolio_value(prices, allocs):
         normed = prices / prices.iloc[0, :]        
         alloced = normed * allocs
         return alloced.sum(axis=1)
 
+    # Cumulative return
     def calculate_cumulative_return(prices, allocs):
-        port_val = calculate_daily_portfolio_value(prices, allocs)
-        return (port_val.iloc[-1]/port_val.iloc[0]) - 1
+        daily_portfolio_value = calculate_daily_portfolio_value(prices, allocs)
+        return (daily_portfolio_value.iloc[-1]/daily_portfolio_value.iloc[0]) - 1
     
+    # Minimum sharpe ratio
     def get_minimum_sharpe_ratio(allocs):
         return -calculate_sharpe_ratio(prices, allocs)
     
@@ -116,13 +119,16 @@ def optimize_portfolio(
     bound = []
     for _ in range(len(syms)):
         bound.append((0.0, 1.0))
-    result = spo.minimize(get_minimum_sharpe_ratio, np.array([1.0 / len(syms)] * len(syms)), method ='SLSQP', constraints = {'type': 'eq', 'fun': lambda x: 1 - np.sum(x)}, bounds= bound).x   		  		 		  		  		    	 		 		   		 		  
+    result = spo.minimize(get_minimum_sharpe_ratio, np.array([1.0 / len(syms)] * len(syms)), method ='SLSQP', constraints = {'type': 'eq', 'fun': lambda x: 1 - np.sum(x)}, bounds= bound).x   	
+    
+    # Calculate statistics of the optimized allocated portfolio  		 		  		  		    	 		 		   		 		  
     cr, adr, sddr, sr = [calculate_cumulative_return(prices, result), calculate_average_daily_portfolio_return(prices, result), calculate_standard_deviation_of_daily_portfolio_return(prices, result), calculate_sharpe_ratio(prices, result)] 		  
-    port_val = calculate_daily_portfolio_value(prices, result)  # add code here to compute daily portfolio values
-    normalized_prices_SPY = prices_SPY/prices_SPY.iloc[0]	  		 		  		  		    	 		 		   		 		  
-    # Compare daily portfolio value with SPY using a normalized plot  		  	   		  		 		  		  		    	 		 		   		 		  
+    
+    # Compare daily portfolio value with SPY using a normalized plot
+    daily_portfolio_value = calculate_daily_portfolio_value(prices, result)
+    normalized_prices_SPY = prices_SPY/prices_SPY.iloc[0]	  		 		  		  		    	 		 		   		 		   		  	   		  		 		  		  		    	 		 		   		 		  
     if gen_plot:  		  	   		  		 		  		  		    	 		 		   		 		  
-        df_temp = pd.concat([port_val, normalized_prices_SPY], keys=["Portfolio", "SPY"], axis=1)
+        df_temp = pd.concat([daily_portfolio_value, normalized_prices_SPY], keys=["Portfolio", "SPY"], axis=1)
         ax = df_temp.plot(title = "Daily Portfolio Value and SPY")
         ax.set_xlabel("Date")
         ax.set_ylabel("Price")
