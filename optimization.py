@@ -20,12 +20,13 @@ students of CS 7646 is prohibited and subject to being investigated as a
 GT honor code violation.  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
 -----do not edit anything above this line---  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-Student Name: Tucker Balch (replace with your name)  		  	   		  		 		  		  		    	 		 		   		 		  
-GT User ID: tb34 (replace with your User ID)  		  	   		  		 		  		  		    	 		 		   		 		  
-GT ID: 900897987 (replace with your GT ID)  		  	   		  		 		  		  		    	 		 		   		 		  
-"""  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
+  		 
+Project Link: https://lucylabs.gatech.edu/ml4t/fall2023/project-2/		 		  		  		    	 		 		   		 		   	   		  		 		  		  		    	 		 		   		 		  
+Student Name: Apurva Gandhi	  	   		  		 		  		  		    	 		 		   		 		  
+GT User ID: agandhi301		  	   		  		 		  		  		    	 		 		   		 		  
+GT ID: 903862828
+		  	   		  		 		  		  		    	 		 		   		 		  
+"""  		  	   		  		 		  		  		    	 		 		   		 		  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
 import datetime as dt  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
@@ -33,14 +34,15 @@ import numpy as np
   		  	   		  		 		  		  		    	 		 		   		 		  
 import matplotlib.pyplot as plt  		  	   		  		 		  		  		    	 		 		   		 		  
 import pandas as pd  		  	   		  		 		  		  		    	 		 		   		 		  
-from util import get_data, plot_data  		  	   		  		 		  		  		    	 		 		   		 		  
+from util import get_data, plot_data 
+import scipy.optimize as spo
   		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
 # This is the function that will be tested by the autograder  		  	   		  		 		  		  		    	 		 		   		 		  
 # The student must update this code to properly implement the functionality  		  	   		  		 		  		  		    	 		 		   		 		  
 def optimize_portfolio(  		  	   		  		 		  		  		    	 		 		   		 		  
     sd=dt.datetime(2008, 1, 1),  		  	   		  		 		  		  		    	 		 		   		 		  
-    ed=dt.datetime(2009, 1, 1),  		  	   		  		 		  		  		    	 		 		   		 		  
+    ed=dt.datetime(2008, 1, 2),  		  	   		  		 		  		  		    	 		 		   		 		  
     syms=["GOOG", "AAPL", "GLD", "XOM"],  		  	   		  		 		  		  		    	 		 		   		 		  
     gen_plot=False,  		  	   		  		 		  		  		    	 		 		   		 		  
 ):  		  	   		  		 		  		  		    	 		 		   		 		  
@@ -67,37 +69,69 @@ def optimize_portfolio(
     """  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
     # Read in adjusted closing prices for given symbols, date range  		  	   		  		 		  		  		    	 		 		   		 		  
-    dates = pd.date_range(sd, ed)  		  	   		  		 		  		  		    	 		 		   		 		  
-    prices_all = get_data(syms, dates)  # automatically adds SPY  		  	   		  		 		  		  		    	 		 		   		 		  
-    prices = prices_all[syms]  # only portfolio symbols  		  	   		  		 		  		  		    	 		 		   		 		  
-    prices_SPY = prices_all["SPY"]  # only SPY, for comparison later  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-    # find the allocations for the optimal portfolio  		  	   		  		 		  		  		    	 		 		   		 		  
-    # note that the values here ARE NOT meant to be correct for a test case  		  	   		  		 		  		  		    	 		 		   		 		  
-    allocs = np.asarray(  		  	   		  		 		  		  		    	 		 		   		 		  
-        [0.2, 0.2, 0.3, 0.3]  		  	   		  		 		  		  		    	 		 		   		 		  
-    )  # add code here to find the allocations  		  	   		  		 		  		  		    	 		 		   		 		  
-    cr, adr, sddr, sr = [  		  	   		  		 		  		  		    	 		 		   		 		  
-        0.25,  		  	   		  		 		  		  		    	 		 		   		 		  
-        0.001,  		  	   		  		 		  		  		    	 		 		   		 		  
-        0.0005,  		  	   		  		 		  		  		    	 		 		   		 		  
-        2.1,  		  	   		  		 		  		  		    	 		 		   		 		  
-    ]  # add code here to compute stats  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-    # Get daily portfolio value  		  	   		  		 		  		  		    	 		 		   		 		  
-    port_val = prices_SPY  # add code here to compute daily portfolio values  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
+    dates = pd.date_range(sd, ed)
+    prices_all_data_frame = get_data(syms, dates)  # automatically adds SPY 
+    prices = prices_all_data_frame[syms]  # only portfolio symbols  	
+    prices_SPY = prices_all_data_frame["SPY"]  # only SPY, for comparison later  
+    allocs = np.asarray(1/len(syms) * np.ones(len(syms)))   
+    		  	   		  		 		  		  		    	 		 		   		 		  
+    # Computing Stats
+    def compute_daily_stock_returns(prices):
+        daily_returns = prices.copy()
+        # compute daily returns for row 1 onwards        
+        daily_returns[1:] = (prices[1:] / prices[:-1].values) - 1
+        daily_returns.iloc[0, :] = 0 #Set daily returns for row 0 to 0
+        return daily_returns
+    
+    def compute_daily_portfolio_return(prices, allocs):
+        daily_portfolio_value = calculate_daily_portfolio_value(prices, allocs)
+        daily_portfolio_returns = (daily_portfolio_value/daily_portfolio_value.shift(1)) - 1
+        daily_portfolio_returns = daily_portfolio_returns.iloc[1:]
+        return daily_portfolio_returns
+        
+    def calculate_average_daily_portfolio_return(prices, allocs):
+        daily_returns = compute_daily_portfolio_return(prices, allocs)    
+        return daily_returns.mean()
+    
+    def calculate_standard_deviation_of_daily_portfolio_return(prices, allocs):
+        daily_returns = compute_daily_portfolio_return(prices, allocs)
+        return daily_returns.std()
+    
+    def calculate_sharpe_ratio(prices, allocs):
+        return calculate_average_daily_portfolio_return(prices, allocs) / calculate_standard_deviation_of_daily_portfolio_return(prices, allocs)    
+
+    def calculate_daily_portfolio_value(prices, allocs):
+        normed = prices / prices.iloc[0, :]        
+        alloced = normed * allocs
+        return alloced.sum(axis=1)
+
+    def calculate_cumulative_return(prices, allocs):
+        port_val = calculate_daily_portfolio_value(prices, allocs)
+        return (port_val.iloc[-1]/port_val.iloc[0]) - 1
+    
+    def get_minimum_sharpe_ratio(allocs):
+        return -calculate_sharpe_ratio(prices, allocs)
+    
+    # Calling the minimize function
+    bound = []
+    for _ in range(len(syms)):
+        bound.append((0.0, 1.0))
+    result = spo.minimize(get_minimum_sharpe_ratio, np.array([1.0 / len(syms)] * len(syms)), method ='SLSQP', constraints = {'type': 'eq', 'fun': lambda x: 1 - np.sum(x)}, bounds= bound).x   		  		 		  		  		    	 		 		   		 		  
+    cr, adr, sddr, sr = [calculate_cumulative_return(prices, result), calculate_average_daily_portfolio_return(prices, result), calculate_standard_deviation_of_daily_portfolio_return(prices, result), calculate_sharpe_ratio(prices, result)] 		  
+    port_val = calculate_daily_portfolio_value(prices, result)  # add code here to compute daily portfolio values
+    normalized_prices_SPY = prices_SPY/prices_SPY.iloc[0]	  		 		  		  		    	 		 		   		 		  
     # Compare daily portfolio value with SPY using a normalized plot  		  	   		  		 		  		  		    	 		 		   		 		  
     if gen_plot:  		  	   		  		 		  		  		    	 		 		   		 		  
-        # add code to plot here  		  	   		  		 		  		  		    	 		 		   		 		  
-        df_temp = pd.concat(  		  	   		  		 		  		  		    	 		 		   		 		  
-            [port_val, prices_SPY], keys=["Portfolio", "SPY"], axis=1  		  	   		  		 		  		  		    	 		 		   		 		  
-        )  		  	   		  		 		  		  		    	 		 		   		 		  
-        pass  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-    return allocs, cr, adr, sddr, sr  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
+        df_temp = pd.concat([port_val, normalized_prices_SPY], keys=["Portfolio", "SPY"], axis=1)
+        ax = df_temp.plot(title = "Daily Portfolio Value and SPY")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Price")
+        ax.grid(True)
+        plt.savefig('Figure1.png')	
+        plt.clf()  	   		  		 		  		  		    	 		 		   		 		  		  	   		  		 		  		  		    	 		 		   		 		  
+      		  		 		  		  		    	 		 		   		 		  
+    return result, cr, adr, sddr, sr
+               		  	   		  		 		  		  		    	 		 		   		 		  
 def test_code():  		  	   		  		 		  		  		    	 		 		   		 		  
     """  		  	   		  		 		  		  		    	 		 		   		 		  
     This function WILL NOT be called by the auto grader.  		  	   		  		 		  		  		    	 		 		   		 		  
@@ -105,11 +139,11 @@ def test_code():
   		  	   		  		 		  		  		    	 		 		   		 		  
     start_date = dt.datetime(2009, 1, 1)  		  	   		  		 		  		  		    	 		 		   		 		  
     end_date = dt.datetime(2010, 1, 1)  		  	   		  		 		  		  		    	 		 		   		 		  
-    symbols = ["GOOG", "AAPL", "GLD", "XOM", "IBM"]  		  	   		  		 		  		  		    	 		 		   		 		  
+    symbols = ["GOOG", "AAPL", "GLD", "XOM"]  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
     # Assess the portfolio  		  	   		  		 		  		  		    	 		 		   		 		  
     allocations, cr, adr, sddr, sr = optimize_portfolio(  		  	   		  		 		  		  		    	 		 		   		 		  
-        sd=start_date, ed=end_date, syms=symbols, gen_plot=False  		  	   		  		 		  		  		    	 		 		   		 		  
+        sd=start_date, ed=end_date, syms=symbols, gen_plot=True  		  	   		  		 		  		  		    	 		 		   		 		  
     )  		  	   		  		 		  		  		    	 		 		   		 		  
   		  	   		  		 		  		  		    	 		 		   		 		  
     # Print statistics  		  	   		  		 		  		  		    	 		 		   		 		  
@@ -121,9 +155,6 @@ def test_code():
     print(f"Volatility (stdev of daily returns): {sddr}")  		  	   		  		 		  		  		    	 		 		   		 		  
     print(f"Average Daily Return: {adr}")  		  	   		  		 		  		  		    	 		 		   		 		  
     print(f"Cumulative Return: {cr}")  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-  		  	   		  		 		  		  		    	 		 		   		 		  
-if __name__ == "__main__":  		  	   		  		 		  		  		    	 		 		   		 		  
-    # This code WILL NOT be called by the auto grader  		  	   		  		 		  		  		    	 		 		   		 		  
-    # Do not assume that it will be called  		  	   		  		 		  		  		    	 		 		   		 		  
+  		  	   		  		 		  		  		    	 		 		   		 		  	  	   		  		 		  		  		    	 		 		   		 		  
+if __name__ == "__main__":  		  	   		  		 		  		  		    	 		 		   		 		   		  	   		  		 		  		  		    	 		 		   		 		  
     test_code()  		  	   		  		 		  		  		    	 		 		   		 		  
